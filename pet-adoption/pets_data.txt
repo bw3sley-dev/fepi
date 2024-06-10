@@ -1,0 +1,6 @@
+name,breed,status_id,organization_id
+Buddy,Labrador,1,1
+Molly,Beagle,1,2
+Charlie,Poodle,2,1
+Bella,Bulldog,1,2
+Max,Golden Retriever,2,1

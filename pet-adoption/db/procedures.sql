@@ -8,6 +8,7 @@ BEGIN
 		SET status_id = @status_id
     WHERE id = @pet_id;
 END;
+GO
 
 -- Procedure para adicionar um novo pet
 CREATE OR ALTER PROCEDURE [dbo].[_sp_add_new_pet]
@@ -32,6 +33,7 @@ BEGIN
 		@organization_id
 	)
 END
+GO
 
 -- Procedure para registrar uma adoção
 CREATE OR ALTER PROCEDURE [dbo].[_sp_register_adoption]
@@ -56,6 +58,7 @@ BEGIN
 		SET adoption_id = @adoption_id
 	WHERE id = @pet_id
 END
+GO
 
 -- Procedure para atualizar informações de um pet
 CREATE OR ALTER PROCEDURE [dbo].[_sp_update_pet_info]
@@ -73,6 +76,7 @@ BEGIN
 			organization_id = @organization_id
     WHERE id = @pet_id;
 END
+GO
 
 CREATE OR ALTER PROCEDURE [dbo].[_sp_create_doctor]
 	@doctor_public_id UNIQUEIDENTIFIER,
@@ -95,6 +99,7 @@ BEGIN
 		@contact_info
 	);
 END
+GO
 
 -- Procedure para adicionar um novo doutor e relacioná-lo a um pet
 CREATE OR ALTER PROCEDURE [dbo].[_sp_book_appointment_pet]
@@ -105,9 +110,10 @@ BEGIN
     INSERT INTO doctor_pet (doctor_id, pet_id)
     VALUES (@doctor_id, @pet_id);
 END
+GO
 
 --  Procedure para listar pets e seus adotantes
-CREATE OR ALTER PROCEDURE [dbo].[_sp_get_pets_addopters]
+CREATE OR ALTER PROCEDURE [dbo].[_sp_get_pets_adopters]
 	@datetime DATETIME = NULL
 AS
 BEGIN
@@ -154,3 +160,65 @@ BEGIN
 
 	EXEC sp_executesql @sql, N'@datetime DATETIME', @datetime
 END
+GO
+
+-- Criar a procedure para fazer o BULK INSERT dos dados de pets a partir de um arquivo .txt
+CREATE OR ALTER PROCEDURE [dbo].[_sp_bulk_insert_pets]
+    @filePath NVARCHAR(4000)
+AS
+BEGIN
+	CREATE TABLE #_pets (
+		name VARCHAR(200),
+		breed VARCHAR(200),
+		status_id TINYINT,
+		organization_id INT
+	)
+
+    BEGIN TRY
+        DECLARE @sql NVARCHAR(MAX);
+        SET @sql = N'BULK INSERT #_pets
+                    FROM ''' + 'D:/w3sLeY/www/bin/fepi/pet-adoption/pets_data.txt' + '''
+                    WITH (
+                        FIELDTERMINATOR = '','', 
+						ROWTERMINATOR = ''0x0a'', 
+						CODEPAGE = ''ACP'',
+                        FIRSTROW = 2
+                    );';
+
+        EXEC sp_executesql @sql;
+
+		INSERT INTO pets (
+			name, 
+			breed, 
+			status_id, 
+			organization_id
+		)
+
+		SELECT 
+			name, 
+			breed, 
+			status_id, 
+			organization_id 
+		
+		FROM #_pets
+
+		DROP TABLE #_pets
+
+        PRINT 'Bulk insert realizado com sucesso.';
+    END TRY
+    BEGIN CATCH
+        DECLARE @ErrorMessage NVARCHAR(4000);
+        DECLARE @ErrorSeverity INT;
+        DECLARE @ErrorState INT;
+
+        SELECT 
+            @ErrorMessage = ERROR_MESSAGE(),
+            @ErrorSeverity = ERROR_SEVERITY(),
+            @ErrorState = ERROR_STATE();
+
+        RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END
+GO
+
+EXEC [dbo].[_sp_bulk_insert_pets] @filePath = 'D:/w3sLeY/www/bin/fepi/pet-adoption/pets_data.txt';
