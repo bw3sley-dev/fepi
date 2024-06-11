@@ -19,7 +19,6 @@ CREATE OR ALTER PROCEDURE [dbo].[_sp_add_new_pet]
 AS
 BEGIN
 	INSERT INTO pets (
-		public_id, 
 		name, 
 		breed, 
 		status_id, 
@@ -39,7 +38,7 @@ GO
 CREATE OR ALTER PROCEDURE [dbo].[_sp_register_adoption]
 	@pet_id BIGINT,
 	@adopter_id BIGINT,
-	@adoption_date DATETIME = '',
+	@adoption_date DATETIME = ''
 AS
 BEGIN
 	IF (@adoption_date = '')
@@ -82,7 +81,7 @@ CREATE OR ALTER PROCEDURE [dbo].[_sp_create_doctor]
 	@doctor_public_id UNIQUEIDENTIFIER,
     @doctor_name VARCHAR(50),
     @specialization VARCHAR(50),
-    @contact_info VARCHAR(50),
+    @contact_info VARCHAR(50)
 AS
 BEGIN
 	INSERT INTO doctors (

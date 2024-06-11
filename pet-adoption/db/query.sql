@@ -10,13 +10,14 @@ GROUP BY orgs.name
 ORDER BY available_pets DESC;
 
 -- Obter a média, o mínimo e o máximo de pets adotados por cada adotante
-SELECT 
-    MIN(pets_count) AS min_pets_adopted,
-    MAX(pets_count) AS max_pets_adopted,
-    AVG(pets_count) AS avg_pets_adopted
+SELECT
+	pets_per_adopter.id,
+    MIN(pets_per_adopter.pets_count) AS min_pets_adopted,
+    MAX(pets_per_adopter.pets_count) AS max_pets_adopted,
+    AVG(pets_per_adopter.pets_count) AS avg_pets_adopted
 FROM (
     SELECT 
-        adopters.id, 
+        adopters.id as id, 
         COUNT(pets.id) AS pets_count
     FROM adopters adopters
     INNER JOIN adoptions adoptions 
@@ -24,7 +25,8 @@ FROM (
     INNER JOIN pets pets 
         ON adoptions.id = pets.adoption_id
     GROUP BY adopters.id
-) AS pets_per_adopter;
+) AS pets_per_adopter
+GROUP BY pets_per_adopter.id
 
 -- Contar o número total de pets disponíveis para adoção
 SELECT 
@@ -43,17 +45,6 @@ INNER JOIN adoptions adoptions
 INNER JOIN pets pets 
     ON adoptions.id = pets.adoption_id
 GROUP BY adopters.id, adopters.name;
-
--- Listar todas as organizações e o número de pets disponíveis para adoção
-SELECT 
-    orgs.id AS organization_id, 
-    orgs.name AS organization_name, 
-    COUNT(pets.id) AS available_pets
-FROM orgs orgs
-INNER JOIN pets pets 
-    ON orgs.id = pets.organization_id
-WHERE pets.status_id = 1
-GROUP BY orgs.id, orgs.name;
 
 -- Listar todos os pets, seus adotantes e a data de adoção
 SELECT 
